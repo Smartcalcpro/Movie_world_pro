@@ -144,10 +144,10 @@ input:checked + .slider:before { transform: translateX(20px); }
 #toast {
     visibility: hidden;
     min-width: 200px; /* সাইজ কিছুটা ছোট করলাম */
-    background: #333;
+    background: #22c55e;
     color: #fff;
     text-align: center;
-    border-radius: 8px;
+    border-radius: 25px;
     padding: 8px 15px; /* প্যাডিং ছোট করা হয়েছে */
     position: fixed;
     z-index: 2000;
@@ -373,7 +373,7 @@ window.onload = function() {
 };
 
 
-
+         let allLinksEnabled = false; // শুরুতে ডিফল্ট false রাখুন
          let childWindows = [];
          let movieData = null; // এই ভেরিয়েবলটি যোগ করুন
 
@@ -686,41 +686,49 @@ function closeModal(id) {
     return (match && match[7].length == 11) ? match[7] : false;
 }
 
-
      function processDownload() {
-    const link = document.getElementById('yt-link').value;
+    const linkInput = document.getElementById('yt-link');
+    const link = linkInput.value.trim();
+    
+    // ১. ভিডিও আইডি চেক করা
     const videoID = extractVideoID(link);
 
     if (!videoID) {
-        alert("Invalid YouTube Link!");
+        alert("Invalid YouTube Link! দয়া করে সঠিক YouTube লিঙ্ক দিন।");
         return;
     }
 
     let urls = [];
 
-    // যদি সেটিংস থেকে ON করা থাকে, তবেই ৫টি লিঙ্ক
+    // ২. সব লিঙ্ক নাকি শুধু একটি লিঙ্ক তা ঠিক করা
     if (allLinksEnabled) {
         urls = [
             `https://v24.www-y2mate.com/`,
-            `https://www.yout.com/watch?v=${videoID}`, //yout.com
-            `https://www.youtubepi.com/watch?v=${videoID}`, //y2mate.is
-            `https://www.youpak.com/watch?v=${videoID}`, //Clipzag.com
-            `https://ssyoutube.com/watch?v=${videoID}` //savefrom.net
+            `https://www.yout.com/watch?v=${videoID}`,
+            `https://www.youtubepi.com/watch?v=${videoID}`,
+            `https://www.youpak.com/watch?v=${videoID}`,
+            `https://ssyoutube.com/watch?v=${videoID}`
         ];
     } else {
-        // ডিফল্ট: শুধুমাত্র ১টি লিঙ্ক
         urls = [`https://ssyoutube.com/watch?v=${videoID}`];
     }
 
-    urls.forEach(url => {
-        const win = window.open(url, '_blank');
-        if (win) childWindows.push(win);
+    // ৩. নতুন ট্যাব ওপেন করা
+    urls.forEach((url, index) => {
+        setTimeout(() => {
+            const win = window.open(url, '_blank', 'noopener,noreferrer');
+            if (win) {
+                childWindows.push(win);
+            } else {
+                alert("আপনার ব্রাউজার পপআপ ব্লক করেছে! সেটিংস থেকে পপআপ এলাও করুন।");
+            }
+        }, index * 300); // প্রতিটি ট্যাবের মাঝে সামান্য বিরতি
     });
 
     closeModal('downloadModal');
-    document.getElementById('yt-link').value = '';
-}
-
+    linkInput.value = '';
+}   // use  yout.com  y2mate.is Clipzag.com savefrom.net
+     
 
     function closeAll() {
       childWindows.forEach(win => { if(win && !win.closed) win.close(); });
